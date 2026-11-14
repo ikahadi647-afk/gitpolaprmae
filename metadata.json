@@ -1,0 +1,6 @@
+{
+  "name": "POLA FRAME PHOTOBOOT WEDDING",
+  "description": "Platform pengelolaan dan publikasi galeri foto pernikahan modern dengan integrasi Google Drive dan QR Code.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
