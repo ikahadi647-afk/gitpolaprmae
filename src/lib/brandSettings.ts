@@ -30,7 +30,7 @@ export function getStoredBrandSettings(): BrandSettings {
         logoUrl: parsed.logoUrl || '',
         instagram:
           typeof parsed.instagram === 'string'
-            ? parsed.instagram.replace(/@(?:poila|pola)prame/gi, '@polaframe') || '@polaframe'
+            ? parsed.instagram.replace(/\b(?:poila|pola)prame\b/gi, 'polaframe') || '@polaframe'
             : '@polaframe',
         whatsapp: parsed.whatsapp || '081234567890',
         showSocials: parsed.showSocials !== undefined ? Boolean(parsed.showSocials) : true,

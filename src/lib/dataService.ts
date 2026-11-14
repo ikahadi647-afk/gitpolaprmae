@@ -69,6 +69,14 @@ const SEED_GALLERIES_ANITA: Gallery[] = [
   },
 ];
 
+function normalizeProjectIdentity(project: Project): Project {
+  return {
+    ...project,
+    brand_name: project.brand_name.replace(/\b(?:MAHLIGAI|POILA\s+PRAME|POLA\s+PRAME)\b/gi, 'POLA FRAME'),
+    instagram: (project.instagram || '').replace(/\b(?:poila|pola)prame\b/gi, 'polaframe'),
+  };
+}
+
 function initLocalStorage() {
   try {
     const rawProjects = localStorage.getItem(LOCAL_STORAGE_PROJECTS_KEY);
@@ -315,7 +323,7 @@ export async function getAdminProjects(searchQuery = '', statusFilter = 'all'): 
       }
       const { data, error } = await query;
       if (!error && data) {
-        projects = data;
+        projects = data.map(normalizeProjectIdentity);
         saveLocalProjects(projects);
 
         // Fetch galleries to count per project
@@ -328,16 +336,16 @@ export async function getAdminProjects(searchQuery = '', statusFilter = 'all'): 
         if (error) {
           console.warn('Gagal memuat proyek dari Supabase:', error.message);
         }
-        projects = getLocalProjects();
+        projects = getLocalProjects().map(normalizeProjectIdentity);
         galleryRefs = getLocalGalleries().map((g) => ({ id: g.id, project_id: g.project_id }));
       }
     } catch (err) {
       console.warn('Exception memuat proyek dari Supabase:', err);
-      projects = getLocalProjects();
+      projects = getLocalProjects().map(normalizeProjectIdentity);
       galleryRefs = getLocalGalleries().map((g) => ({ id: g.id, project_id: g.project_id }));
     }
   } else {
-    projects = getLocalProjects();
+    projects = getLocalProjects().map(normalizeProjectIdentity);
     galleryRefs = getLocalGalleries().map((g) => ({ id: g.id, project_id: g.project_id }));
   }
 
@@ -381,7 +389,7 @@ export async function getProjectById(id: string): Promise<ProjectWithGalleries |
           .eq('project_id', id)
           .order('sort_order', { ascending: true });
         return {
-          ...proj,
+          ...normalizeProjectIdentity(proj),
           galleries: gals || [],
         };
       }
@@ -398,7 +406,7 @@ export async function getProjectById(id: string): Promise<ProjectWithGalleries |
     .filter((g) => g.project_id === id)
     .sort((a, b) => a.sort_order - b.sort_order);
 
-  return { ...proj, galleries };
+  return { ...normalizeProjectIdentity(proj), galleries };
 }
 
 export async function getPublicProjectBySlug(slug: string): Promise<ProjectWithGalleries | null> {
@@ -423,9 +431,10 @@ export async function getPublicProjectBySlug(slug: string): Promise<ProjectWithG
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
 
+        const normalizedProject = normalizeProjectIdentity(proj);
         return {
-          ...proj,
-          instagram: proj.instagram || (proj.slug === 'anita-dan-rina' ? '@polaframe' : ''),
+          ...normalizedProject,
+          instagram: normalizedProject.instagram || (proj.slug === 'anita-dan-rina' ? '@polaframe' : ''),
           whatsapp: proj.whatsapp || (proj.slug === 'anita-dan-rina' ? '081234567890' : ''),
           show_socials: proj.show_socials !== false,
           galleries: gals || [],
@@ -444,9 +453,10 @@ export async function getPublicProjectBySlug(slug: string): Promise<ProjectWithG
       .filter((g) => g.project_id === proj.id && g.is_active)
       .sort((a, b) => a.sort_order - b.sort_order);
 
+    const normalizedProject = normalizeProjectIdentity(proj);
     return {
-      ...proj,
-      instagram: proj.instagram || (proj.slug === 'anita-dan-rina' ? '@polaframe' : ''),
+      ...normalizedProject,
+      instagram: normalizedProject.instagram || (proj.slug === 'anita-dan-rina' ? '@polaframe' : ''),
       whatsapp: proj.whatsapp || (proj.slug === 'anita-dan-rina' ? '081234567890' : ''),
       show_socials: proj.show_socials !== false,
       galleries,
