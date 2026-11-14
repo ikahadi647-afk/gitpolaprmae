@@ -47,7 +47,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
             <Camera className="w-6 h-6" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-wider text-stone-900">
-            MAHLIGAI
+            POLA FRAME
           </h1>
           <p className="text-xs uppercase tracking-widest text-stone-500 mt-1">
             Portal Admin Galeri Foto Pengantin

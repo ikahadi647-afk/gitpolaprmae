@@ -182,7 +182,7 @@ function AdminApp() {
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs text-stone-500 font-medium">Memuat Mahligai...</span>
+          <span className="text-xs text-stone-500 font-medium">Memuat Pola Frame...</span>
         </div>
       </div>
     );

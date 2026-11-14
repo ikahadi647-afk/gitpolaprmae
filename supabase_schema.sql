@@ -1,5 +1,5 @@
 -- ====================================================================
--- MAHLIGAI — SCHEMA DATABASE & RLS POLICIES SUPABASE (VERSI TERBARU)
+-- POLA FRAME — SCHEMA DATABASE & RLS POLICIES SUPABASE (VERSI TERBARU)
 -- Platform Pengelolaan Galeri Foto Pengantin & Link Google Drive
 -- Jalankan skrip ini langsung di SQL Editor Supabase Anda
 -- ====================================================================

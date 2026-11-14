@@ -616,24 +616,64 @@ export async function saveProject(
           };
         }
 
-        // 2. DELETE OLD GALLERIES
-        const { error: delGalErr } = await supabase
+        // 2. Sync galleries without reinserting existing primary keys
+        const { data: existingGalleries, error: existingGalleriesErr } = await supabase
           .from('galleries')
-          .delete()
+          .select('id, created_at')
           .eq('project_id', projectId);
 
-        if (delGalErr) {
-          console.warn('Supabase delete old galleries warning:', delGalErr.message);
+        if (existingGalleriesErr) {
+          return {
+            success: false,
+            error: `Proyek terupdate, tetapi galeri lama gagal dibaca: ${existingGalleriesErr.message}`,
+          };
         }
 
-        // 3. INSERT NEW GALLERIES
+        const existingGalleryDates = new Map(
+          (existingGalleries || []).map((gallery) => [gallery.id, gallery.created_at])
+        );
+        galleryRecords.forEach((gallery) => {
+          const createdAt = existingGalleryDates.get(gallery.id);
+          if (createdAt) gallery.created_at = createdAt;
+        });
+
         if (galleryRecords.length > 0) {
-          const { error: insGalErr } = await supabase.from('galleries').insert(galleryRecords);
-          if (insGalErr) {
-            console.error('Supabase insert galleries error:', insGalErr);
+          const { error: upsertGalleriesErr } = await supabase
+            .from('galleries')
+            .upsert(galleryRecords, { onConflict: 'id' });
+          if (upsertGalleriesErr) {
+            console.error('Supabase upsert galleries error:', upsertGalleriesErr);
             return {
               success: false,
-              error: `Proyek terupdate, tetapi galeri gagal disimpan di Supabase: ${insGalErr.message}`,
+              error: `Proyek terupdate, tetapi galeri gagal disimpan di Supabase: ${upsertGalleriesErr.message}`,
+            };
+          }
+        }
+
+        const submittedGalleryIds = new Set(galleryRecords.map((gallery) => gallery.id));
+        const removedGalleryIds = (existingGalleries || [])
+          .map((gallery) => gallery.id)
+          .filter((id) => !submittedGalleryIds.has(id));
+
+        if (removedGalleryIds.length > 0) {
+          const { data: deletedGalleries, error: deleteGalleriesErr } = await supabase
+            .from('galleries')
+            .delete()
+            .eq('project_id', projectId)
+            .in('id', removedGalleryIds)
+            .select('id');
+
+          if (deleteGalleriesErr) {
+            return {
+              success: false,
+              error: `Galeri tersimpan, tetapi galeri yang dihapus dari formulir gagal dihapus di Supabase: ${deleteGalleriesErr.message}`,
+            };
+          }
+
+          if ((deletedGalleries || []).length !== removedGalleryIds.length) {
+            return {
+              success: false,
+              error: 'Galeri tersimpan, tetapi sebagian galeri lama tidak terhapus. Periksa kebijakan DELETE RLS tabel galleries di Supabase.',
             };
           }
         }
